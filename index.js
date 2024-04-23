@@ -7,7 +7,7 @@ const port = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
-
+app.use (cors({origin:["localhost url","https://coffee-store-server-umber-five.vercel.app"]}))
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.ufkobjs.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
@@ -23,7 +23,7 @@ const client = new MongoClient(uri, {
 async function run() {
     try {
         // Connect the client to the server	(optional starting in v4.7)
-        await client.connect();
+        // await client.connect();
 
         // Database Collection
         const database = client.db("coffeeDb");
@@ -94,6 +94,19 @@ async function run() {
             console.log(user);
             const result = await userCollection.insertOne(user);
             res.send(result);
+        })
+
+        app.patch("/user", async (req, res) => {
+            const user = req.body;
+            const filter = { email: user.email }
+            const updateDoc = {
+                $set: {
+                    lastSignInTime: user.lastSignInTime
+                }
+            }
+
+            const result = await userCollection.updateOne(filter, updateDoc);
+            res.send(result)
         })
 
         app.delete("/user/:id", async (req, res) => {
